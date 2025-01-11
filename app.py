@@ -43,7 +43,7 @@ if uploaded_file is not None:
         st.write("#### Top 10 Most Popular Anime by Members")
         popular_anime = df.sort_values(by="Members", ascending=False).head(10)
         fig, ax = plt.subplots(figsize=(10, 6))
-        sns.barplot(data=popular_anime, x="Members", y="Name", palette="viridis", ax=ax)
+        sns.barplot(data=popular_anime, x="Members", y="Name", palette="viridis",hue="Name", legend=False, ax=ax)
         ax.set_title("Top 10 Anime by Popularity (Members)")
         ax.set_xlabel("Number of Members")
         ax.set_ylabel("Anime Name")
