@@ -39,7 +39,7 @@ def load_from_zip(file_path):
             df = pd.read_csv(f)
             return df
 
-inputdf = load_csv("anime.csv")
+# inputdf = load_csv("anime.csv")
 df = load_from_zip("df.zip")
 
 url = "https://www.kaggle.com/datasets/hernan4444/anime-recommendation-database-2020"
@@ -95,12 +95,6 @@ if st.button("Find Similar Anime"):
             st.write(distances[0])
             logging.debug("Distances displayed")
 
-            del distances
-            del indices
-            del input_embedding
-            del results
-
-            gc.collect()
 
 
     except Exception as e:
