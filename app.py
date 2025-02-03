@@ -42,7 +42,7 @@ st.write("""# A lot preprocessing can be viewed in the Jupyter Notebook on my Gi
 st.write(df.head(5))  # Show sample anime entries
 
 # ---- FAISS Index Construction ----
-@st.cache_data
+@st.cache_resource
 def build_faiss_index(df):
     df["embedding"] = df["embedding"].apply(json.loads)
     embeddings = np.array(df["embedding"].to_list(), dtype=np.float32)
