@@ -7,6 +7,7 @@ import openai
 import faiss
 import json
 import numpy as np
+import logging 
 
 
 # ---- OpenAI API Setup ----
@@ -55,29 +56,43 @@ index, embeddings = build_faiss_index(df)
 # ---- User Input Section ----
 user_input = st.text_area("Describe an Anime You Like (or Enter an Anime Name)", "A sci-fi adventure with deep storytelling.")
 
+
+
+# Configure logging (do this once at the top of your app)
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# ... (rest of your app code)
+
 if st.button("Find Similar Anime"):
-    with st.spinner("Generating embeddings..."):
-        # ---- Generate Embedding for User Input ----
-        response = client.embeddings.create(
-            input=user_input,
-            model="text-embedding-3-small"
-        )
-        input_embedding = np.array(response.data[0].embedding, dtype=np.float32).reshape(1, -1)  # Convert to correct shape
+    logging.debug("Button clicked!")  # Log when the button is clicked
+    try:
+        with st.spinner("Generating embeddings..."):
+            logging.debug("Entering embedding generation block")
+            response = client.embeddings.create(
+                input=user_input,
+                model="text-embedding-3-small"
+            )
+            input_embedding = np.array(response.data[0].embedding, dtype=np.float32).reshape(1, -1)
+            logging.debug("Embedding generated successfully")
 
-        # ---- Perform FAISS Search ----
-        k = 5  # Number of recommendations
-        distances, indices = index.search(input_embedding, k)
+            logging.debug("Entering FAISS search block")
+            k = 5
+            distances, indices = index.search(input_embedding, k)
+            logging.debug("FAISS search completed")
 
-        # ---- Display Recommendations ----
-        st.write("### 🌟 Based on Your Input, You Might Like:")
-        results = df.iloc[indices[0]][["MAL_ID", "content"]]
-        st.write(results)
+            logging.debug("Entering result display block")
+            st.write("### 🌟 Based on Your Input, You Might Like:")
+            results = df.iloc[indices[0]][["MAL_ID", "content"]]  # This line is a prime suspect
+            st.write(results)
+            logging.debug("Results displayed")
 
-        # ---- Show Search Details ----
-        st.write("### 📊 Nearest Neighbors' Distances")
-        st.write(distances[0])
+            st.write("### 📊 Nearest Neighbors' Distances")
+            st.write(distances[0])
+            logging.debug("Distances displayed")
 
-
+    except Exception as e:
+        logging.exception(f"An error occurred: {e}")  # Log the full traceback
+        st.error(f"An error occurred: {e}")  # Display error in Streamlit
 
 
 
