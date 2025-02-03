@@ -8,6 +8,7 @@ import faiss
 import json
 import numpy as np
 import logging 
+import gc
 
 # Configure logging (do this once at the top of your app)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -93,6 +94,14 @@ if st.button("Find Similar Anime"):
             st.write("### 📊 Nearest Neighbors' Distances")
             st.write(distances[0])
             logging.debug("Distances displayed")
+
+            del distances
+            del indices
+            del input_embedding
+            del results
+
+            gc.collect()
+
 
     except Exception as e:
         logging.exception(f"An error occurred: {e}")  # Log the full traceback
