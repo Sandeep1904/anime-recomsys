@@ -1,6 +1,8 @@
 # Import required libraries
 import streamlit as st
 import pandas as pd
+import zipfile
+import io
 import openai
 import faiss
 import json
@@ -19,12 +21,18 @@ st.write("### Discover Your Next Favorite Anime!")
 def load_csv(file):
     return pd.read_csv(file)  # Adjust the filename if necessary
 
-@st.cache_data
-def load_parquet(file):
-    return pd.read_parquet(file)
+@st.cache_data  # Cache the loaded DataFrame
+def load_from_zip(file_path):
+    with open(file_path, "rb") as f:  # Open in binary read mode
+        zip_bytes = f.read()
+
+    with zipfile.ZipFile(io.BytesIO(zip_bytes), "r") as zipf:
+        with zipf.open("data.csv") as f:
+            df = pd.read_csv(f)
+            return df
 
 inputdf = load_csv("anime.csv")
-df = load_parquet("df.parquet")
+df = load_from_zip("df.zip")
 
 url = "https://www.kaggle.com/datasets/hernan4444/anime-recommendation-database-2020"
 st.write("## You can checkout the original dataset on [Kaggle](%s)" % url)
