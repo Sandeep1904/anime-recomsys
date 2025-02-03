@@ -61,7 +61,7 @@ user_input = st.text_area("Describe an Anime You Like (or Enter an Anime Name)",
 # Configure logging (do this once at the top of your app)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# ... (rest of your app code)
+st.button("testing button")
 
 if st.button("Find Similar Anime"):
     logging.debug("Button clicked!")  # Log when the button is clicked
