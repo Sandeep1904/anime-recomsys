@@ -27,7 +27,7 @@ def load_from_zip(file_path):
         zip_bytes = f.read()
 
     with zipfile.ZipFile(io.BytesIO(zip_bytes), "r") as zipf:
-        with zipf.open("data.csv") as f:
+        with zipf.open("df.csv") as f:
             df = pd.read_csv(f)
             return df
 
