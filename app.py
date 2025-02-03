@@ -9,12 +9,18 @@ import json
 import numpy as np
 import logging 
 
+# Configure logging (do this once at the top of your app)
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+
 
 # ---- OpenAI API Setup ----
 client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"]) 
 
 st.title("🎌 Your AI Anime Guide")
 st.write("### Discover Your Next Favorite Anime!")
+
+
 
 
 
@@ -39,7 +45,7 @@ url = "https://www.kaggle.com/datasets/hernan4444/anime-recommendation-database-
 st.write("## You can checkout the original dataset on [Kaggle](%s)" % url)
 st.write("""# A lot preprocessing can be viewed in the Jupyter Notebook on my Github,
          But the final dataframe with the embeddings from OpenAI look like the following.""")
-st.write(df.head(5))  # Show sample anime entries
+# st.write(df.head(5))  # Show sample anime entries
 
 # ---- FAISS Index Construction ----
 @st.cache_resource
@@ -58,8 +64,6 @@ user_input = st.text_area("Describe an Anime You Like (or Enter an Anime Name)",
 
 
 
-# Configure logging (do this once at the top of your app)
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 st.button("testing button")
 
