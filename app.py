@@ -8,7 +8,7 @@ import faiss
 import json
 import numpy as np
 import logging 
-import gc
+from sentence_transformers import SentenceTransformer
 
 # Configure logging (do this once at the top of your app)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 
 
 # ---- OpenAI API Setup ----
-client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"]) 
+# client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"]) 
 
 st.title("🎌 Your AI Anime Guide")
 st.write("### Discover Your Next Favorite Anime!")
@@ -63,26 +63,22 @@ index, embeddings = build_faiss_index(df)
 # ---- User Input Section ----
 user_input = st.text_area("Describe an Anime You Like (or Enter an Anime Name)", "A sci-fi adventure with deep storytelling.")
 
+model_name = "all-MiniLM-L6-v2"
+model = SentenceTransformer(model_name)
 
-
-
-st.button("testing button")
 
 if st.button("Find Similar Anime"):
     logging.debug("Button clicked!")  # Log when the button is clicked
     try:
         with st.spinner("Generating embeddings..."):
             logging.debug("Entering embedding generation block")
-            response = client.embeddings.create(
-                input=user_input,
-                model="text-embedding-3-small"
-            )
-            input_embedding = np.array(response.data[0].embedding, dtype=np.float32).reshape(1, -1)
+            
+            embedding = model.encode(list(user_input))
             logging.debug("Embedding generated successfully")
 
             logging.debug("Entering FAISS search block")
             k = 5
-            distances, indices = index.search(input_embedding, k)
+            distances, indices = index.search(embedding, k)
             logging.debug("FAISS search completed")
 
             logging.debug("Entering result display block")
