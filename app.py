@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 import zipfile
 import io
-import openai
+# import openai
 import faiss
 import json
 import numpy as np
@@ -36,7 +36,7 @@ st.write(
 )
 
 # ---- Load Data ----
-@st.cache_data
+@st.cache_data(ttl=120)
 def load_from_zip(file_path):
     with open(file_path, "rb") as f:
         zip_bytes = f.read()
@@ -52,7 +52,7 @@ st.write("### 📂 Sample Dataset")
 st.write(df.head())
 
 # ---- FAISS Index Construction ----
-@st.cache_resource
+@st.cache_data(ttl=120)
 def build_faiss_index(df):
     df["embedding"] = df["embedding"].apply(json.loads)
     embeddings = np.array(df["embedding"].to_list(), dtype=np.float32)
