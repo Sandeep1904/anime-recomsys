@@ -9,9 +9,37 @@ import json
 import numpy as np
 import logging 
 from sentence_transformers import SentenceTransformer
+import boto3
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# AWS S3 configs
+@st.cache_resource  # Cache the boto3 client to avoid recreating it on every interaction
+def get_s3_client():
+    try:
+        # 1. Try environment variables first (recommended for production)
+        s3 = boto3.client('s3')  # Boto3 will automatically look for env vars
+
+    except Exception as env_err:
+        try:
+            # 2. If env vars are not set, try Streamlit secrets (for development)
+            s3 = boto3.client('s3',
+                            aws_access_key_id=st.secrets["AWS_ACCESS_KEY_ID"],
+                            aws_secret_access_key=st.secrets["AWS_SECRET_ACCESS_KEY"],
+                            region_name=st.secrets["AWS_DEFAULT_REGION"])
+
+        except Exception as secret_err:
+            st.error("AWS credentials not found. Please set environment variables or Streamlit secrets.")
+            st.stop()  # Stop execution if credentials are not found
+            return None # Return None to indicate failure
+
+    return s3
+
+# Get the S3 client (it will be cached)
+s3 = get_s3_client()
+
+
 
 # ---- App Introduction ----
 st.title("🎌 Your AI Anime Guide")
@@ -36,16 +64,35 @@ st.write(
 )
 
 # ---- Load Data ----
-@st.cache_data(ttl=120)
-def load_from_zip(file_path):
-    with open(file_path, "rb") as f:
-        zip_bytes = f.read()
-    with zipfile.ZipFile(io.BytesIO(zip_bytes), "r") as zipf:
-        with zipf.open("df.csv") as f:
-            df = pd.read_csv(f)
+@st.cache_data(ttl=600)
+def load_from_s3():
+    if s3: # Only proceed if the client was successfully created
+    # Now you can use the s3 client:
+        bucket_name = 'vscprojects'
+        key = 'df.zip'
+
+        try:
+            obj = s3.get_object(Bucket=bucket_name, Key=key)
+            zip_bytes = obj['Body'].read()
+            zip_buffer = io.BytesIO(zip_bytes)  # Use BytesIO for binary data
+
+            # Extract the DataFrame from the zip file
+            with zipfile.ZipFile(zip_buffer, 'r') as zip_ref:
+                # Assuming your CSV file inside the zip is named 'df.csv' (adjust if different)
+                csv_filename = 'df.csv'  # Or whatever your CSV filename is
+                with zip_ref.open(csv_filename) as csv_file:  # Open the CSV file within the zip
+                    df = pd.read_csv(csv_file)
+
+            print("DataFrame loaded from S3 (df.zip):")
             return df
 
-df = load_from_zip("df.zip")
+        except Exception as e:
+            st.error(f"Error interacting with S3: {e}")
+    
+    else:
+        print("s3 client was not loaded properly!")
+
+df = load_from_s3()
 
 # Show a preview of the dataset
 st.write("### 📂 Sample Dataset")
