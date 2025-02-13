@@ -64,7 +64,7 @@ st.write(
 )
 
 # ---- Load Data ----
-@st.cache_data(ttl=600)
+@st.cache_data()
 def load_from_s3():
     if s3: # Only proceed if the client was successfully created
     # Now you can use the s3 client:
@@ -94,12 +94,18 @@ def load_from_s3():
 
 df = load_from_s3()
 
+@st.cache_data()
+def load_data(file):
+    return pd.read_csv(file)
+
+dfr = load_data('anime.csv')
+
 # Show a preview of the dataset
 st.write("### 📂 Sample Dataset")
 st.write(df.head())
 
 # ---- FAISS Index Construction ----
-@st.cache_data(ttl=120)
+@st.cache_data()
 def build_faiss_index(df):
     df["embedding"] = df["embedding"].apply(json.loads)
     embeddings = np.array(df["embedding"].to_list(), dtype=np.float32)
@@ -127,10 +133,10 @@ st.write(
     """
     | Feature                          | OpenAI Embeddings                          | Sentence Transformers                   |
     |----------------------------------|--------------------------------------------|-----------------------------------------|
-    | Performance (Recommendation)     | 🌟🌟🌟🌟🌟                                   | 🌟🌟🌟🌟                                |
-    | Latency                          | ⚡⚡⚡                                        | ⚡⚡⚡⚡⚡                                |
-    | Production Feasibility           | 🚫 Not suitable for lightweight apps       | ✅ Ideal for lightweight apps           |
-    | Cost                             | 💸💸💸                                       | 💸                                    |
+    | Performance (Recommendations)     | 🌟🌟🌟🌟🌟                                   | 🌟🌟🌟                                |
+    | Latency                          | ⚡⚡⚡                                        | ⚡⚡⚡                                |
+    | Production Feasibility           | 🚫 Not suitable for lightweight apps       | ✅ Better for lightweight apps           |
+    | Cost                             | 💸💸💸                                       |                                     |
     """
 )
 
@@ -169,6 +175,10 @@ if st.button("Find Similar Anime"):
             st.write("### 📊 Nearest Neighbors' Distances")
             st.write(distances[0])
 
+            st.write('##### A better display of results:')
+            st.write(dfr.loc[dfr['MAL_ID'].isin(results['MAL_ID'])])
+
+
     except Exception as e:
         logging.exception(f"An error occurred: {e}")  # Log the full traceback
         st.error(f"An error occurred: {e}")  # Display error in Streamlit
@@ -177,8 +187,8 @@ if st.button("Find Similar Anime"):
 st.write("## 🏁 Conclusion")
 st.write(
     """
-    Thank you for using **Your AI Anime Guide**! 
-    We hope you discovered some new anime to enjoy. 
+    Thank you for using **Your AI Anime Guide**! \n
+    We hope you discovered some new anime to enjoy. \n
     Whether you're a fan of OpenAI or Sentence Transformers, this tool demonstrates the power of embeddings in creating personalized recommendations.
     """
 )
